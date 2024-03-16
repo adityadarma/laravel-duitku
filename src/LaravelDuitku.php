@@ -8,6 +8,7 @@ use AdityaDarma\LaravelDuitku\Excepstions\InvalidSignatureException;
 use AdityaDarma\LaravelDuitku\Excepstions\MissingParamaterException;
 use AdityaDarma\LaravelDuitku\Excepstions\PaymentMethodUnavailableException;
 use AdityaDarma\LaravelDuitku\Excepstions\TransactionNotFoundException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
@@ -44,37 +45,29 @@ class LaravelDuitku
      * @param int $paymentAmount
      * @return object
      * @throws DuitkuResponseException
+     * @throws RequestException
      */
     public function getPaymentMethod(int $paymentAmount): object
     {
         // Request data to API
         $response = Http::post($this->url.'/webapi/api/merchant/paymentmethod/getpaymentmethod', [
-            'json' => [
-                'merchantcode' => $this->merchantCode,
-                'amount' => $paymentAmount,
-                'datetime' => $this->datetime,
-                'signature' => hash(
-                    'sha256',
-                    $this->merchantCode . $paymentAmount . $this->datetime . $this->apiKey
-                )
-            ]
-        ]);
-
-        // Response status
-        if ($response->failed()) {
-            throw new DuitkuResponseException();
-        }
+                'merchantcode'  => $this->merchantCode,
+                'amount'        => $paymentAmount,
+                'datetime'      => $this->datetime,
+                'signature'     => hash('sha256', $this->merchantCode . $paymentAmount . $this->datetime . $this->apiKey)
+            ])->throw(function () {
+                throw new DuitkuResponseException();
+            })->object();
 
         // Return data payment method
-        $data = $response->object();
-        if ($data && $data->responseCode === ResponseCode::Success) {
+        if ($response && $response->responseCode === ResponseCode::Success) {
             $paymentMethod = [];
-            foreach ($data->paymentFee as $method) {
+            foreach ($response->paymentFee as $method) {
                 $paymentMethod[] = [
-                    'code' => $method->paymentMethod,
-                    'name' => $method->paymentName,
+                    'code'  => $method->paymentMethod,
+                    'name'  => $method->paymentName,
                     'image' => $method->paymentImage,
-                    'fee' => (int)($method->totalFee)
+                    'fee'   => (int)($method->totalFee)
                 ];
             }
             return (object)$paymentMethod;
@@ -90,6 +83,7 @@ class LaravelDuitku
      * @throws InvalidSignatureException
      * @throws MissingParamaterException
      * @throws PaymentMethodUnavailableException
+     * @throws RequestException
      */
     public function createTransaction(array $data): object
     {
@@ -113,8 +107,7 @@ class LaravelDuitku
         }
 
         // Request data to API
-        $response = Http::post($this->url.'/webapi/api/merchant/v2/inquiry', [
-            'json' => array_merge($data, [
+        $response = Http::post($this->url.'/webapi/api/merchant/v2/inquiry', array_merge($data, [
                 'merchantcode'  => $this->merchantCode,
                 "returnUrl"     => $this->returnUrl,
                 "callbackUrl"   => $this->callbackUrl,
@@ -122,36 +115,31 @@ class LaravelDuitku
                     'sha256',
                     $this->merchantCode . $data['paymentAmount'] . $this->datetime . $this->apiKey
                 ),
-            ])
-        ]);
+            ]))->throw(function ($response, $e) {
+                if (str_contains($response->body(), 'Invalid Signature')) {
+                    throw new InvalidSignatureException();
+                }
+                if (str_contains($response->body(), 'Payment channel not available')) {
+                    throw new PaymentMethodUnavailableException();
+                }
+                throw new DuitkuResponseException();
+            })->object();
 
-        // Response status
-        if ($response->failed()) {
-            if (str_contains($response->body(), 'Invalid Signature')) {
-                throw new InvalidSignatureException();
-            }
-            if (str_contains($response->body(), 'Payment channel not available')) {
-                throw new PaymentMethodUnavailableException();
-            }
-            throw new DuitkuResponseException();
-        }
-
-        // Return data transaction
-        $data = $response->object();
-        if ($data && $data->responseCode === ResponseCode::Success) {
+        // Return data new transaction
+        if ($response && $response->responseCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
-                'reference'     => $data->reference,
-                'payment_url'   => $data->paymentUrl,
-                'va_number'     => $data->vaNumber,
-                'amount'        => (int)($data->amount),
-                'message'       => $data->statusMessage
+                'reference'     => $response->reference,
+                'payment_url'   => $response->paymentUrl,
+                'va_number'     => $response->vaNumber,
+                'amount'        => (int)($response->amount),
+                'message'       => $response->statusMessage
             ];
         }
 
         return (object)[
             'success' => false,
-            'message' => $data->statusMessage
+            'message' => $response->statusMessage
         ];
     }
 
@@ -161,45 +149,40 @@ class LaravelDuitku
      * @throws DuitkuResponseException
      * @throws InvalidSignatureException
      * @throws TransactionNotFoundException
+     * @throws RequestException
      */
     public function checkTransactionStatus(string $merchantOrderId): object
     {
         // Check status transaction
         $response = Http::post($this->url.'/webapi/api/merchant/transactionStatus', [
-            'json' => [
                 'merchantcode'      => $this->merchantCode,
                 "merchantOrderId"   => $merchantOrderId,
                 'signature'         => md5($this->merchantCode . $merchantOrderId . $this->apiKey),
-            ]
-        ]);
-
-        // Response status
-        if ($response->failed()) {
-            if (str_contains($response->body(), 'Invalid Signature')) {
-                throw new InvalidSignatureException();
-            }
-            if (str_contains($response->body(), 'Transaction not found')) {
-                throw new TransactionNotFoundException();
-            }
-            throw new DuitkuResponseException();
-        }
+            ])->throw(function ($response, $e) {
+                if (str_contains($response->body(), 'Invalid Signature')) {
+                    throw new InvalidSignatureException();
+                }
+                if (str_contains($response->body(), 'Payment channel not available')) {
+                    throw new PaymentMethodUnavailableException();
+                }
+                throw new DuitkuResponseException();
+            })->object();
 
         // Return data transaction
-        $data = $response->object();
-        if ($data && $data->responseCode === ResponseCode::Success) {
+        if ($response && $response->responseCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
-                'reference'     => $data->reference,
-                'amount'        => (int)($data->amount),
-                'message'       => $data->statusMessage,
-                'code'          => $data->statusCode,
+                'reference'     => $response->reference,
+                'amount'        => (int)($response->amount),
+                'message'       => $response->statusMessage,
+                'code'          => $response->statusCode,
             ];
         }
 
         return (object)[
             'success' => false,
-            'message' => $data->statusMessage,
-            'code'    => $data->statusCode,
+            'message' => $response->statusMessage,
+            'code'    => $response->statusCode,
         ];
     }
 
@@ -208,6 +191,7 @@ class LaravelDuitku
      * @throws TransactionNotFoundException
      * @throws DuitkuResponseException
      * @throws InvalidSignatureException
+     * @throws RequestException
      */
     public function getNotificationTransaction(): object
     {

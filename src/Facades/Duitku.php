@@ -12,9 +12,14 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \AdityaDarma\LaravelDuitku\LaravelDuitku
  */
-class LaravelDuitku extends Facade
+class Duitku extends Facade
 {
-    public static function getFacadeAccessor(): string
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor(): string
     {
         return 'laravel-duitku';
     }
