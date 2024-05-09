@@ -22,6 +22,9 @@ class LaravelDuitku
     public string $env;
     public string $datetime;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->merchantCode     = config('duitku.merchant_code');
@@ -34,6 +37,11 @@ class LaravelDuitku
         $this->setUrl();
     }
 
+    /**
+     * Set url domain
+     *
+     * @return void
+     */
     public function setUrl(): void
     {
         $this->url = config('duitku.env') === 'production'
@@ -42,6 +50,8 @@ class LaravelDuitku
     }
 
     /**
+     * Get payment method available
+     *
      * @param int $paymentAmount
      * @return object
      * @throws DuitkuResponseException
@@ -77,6 +87,8 @@ class LaravelDuitku
     }
 
     /**
+     * Create payment transaction
+     *
      * @param array $data
      * @return object
      * @throws DuitkuResponseException
@@ -144,6 +156,8 @@ class LaravelDuitku
     }
 
     /**
+     * Check payment transaction
+     *
      * @param string $merchantOrderId
      * @return object
      * @throws DuitkuResponseException
@@ -187,6 +201,8 @@ class LaravelDuitku
     }
 
     /**
+     * Capture callback notification payment
+     *
      * @return object
      * @throws TransactionNotFoundException
      * @throws DuitkuResponseException
@@ -195,12 +211,28 @@ class LaravelDuitku
      */
     public function getNotificationTransaction(): object
     {
-        $merchantOrderId = request()->merchantOrderId;
-        if (!$merchantOrderId) {
-            throw new TransactionNotFoundException();
+        $params = request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey;
+        $calcSignature = md5($params);
+
+        if(request()->signature == $calcSignature)
+        {
+            return (object) request()->only(
+                'amount',
+                'merchantOrderId',
+                'productDetail',
+                'additionalParam',
+                'paymentCode',
+                'resultCode',
+                'merchantUserId',
+                'reference',
+                'publisherOrderId',
+                'spUserHash',
+                'settlementDate',
+                'issuerCode',
+            );
+
         }
 
-        // Validate transaction
-        return $this->checkTransactionStatus($merchantOrderId);
+        throw new InvalidSignatureException('Bad Parameter');
     }
 }
