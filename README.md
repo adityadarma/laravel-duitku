@@ -11,7 +11,7 @@ Laravel Duitku is package to provide payment gateway Duitku.
 2. Install config:
 
    ```bash
-   php artisan duitku:install
+   php artisan laravel-duitku:install
    ```
 
 ### Configuration
