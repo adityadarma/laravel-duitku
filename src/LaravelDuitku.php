@@ -107,7 +107,7 @@ class LaravelDuitku
             'paymentAmount'     => ['required', 'numeric'],
             'paymentMethod'     => ['required', 'string', 'max:2'],
             'productDetails'    => ['required', 'string', 'max:255'],
-            'expiryPeriod'      => ['required', 'numeric'],
+            'expiryPeriod'      => ['nullable', 'numeric'],
             'phoneNumber'       => ['nullable', 'string', 'max:50'],
             'itemDetails'       => ['nullable', 'array'],
             'customerDetail'    => ['nullable', 'array'],
