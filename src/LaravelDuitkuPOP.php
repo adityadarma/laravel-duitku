@@ -3,11 +3,9 @@
 namespace AdityaDarma\LaravelDuitku;
 
 use AdityaDarma\LaravelDuitku\Enums\ResponseCode;
-use AdityaDarma\LaravelDuitku\Excepstions\DuitkuResponseException;
-use AdityaDarma\LaravelDuitku\Excepstions\InvalidSignatureException;
-use AdityaDarma\LaravelDuitku\Excepstions\MissingParamaterException;
-use AdityaDarma\LaravelDuitku\Excepstions\PaymentMethodUnavailableException;
-use AdityaDarma\LaravelDuitku\Excepstions\TransactionNotFoundException;
+use AdityaDarma\LaravelDuitku\Exceptions\DuitkuResponseException;
+use AdityaDarma\LaravelDuitku\Exceptions\InvalidSignatureException;
+use AdityaDarma\LaravelDuitku\Exceptions\MissingParamaterException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -57,7 +55,6 @@ class LaravelDuitkuPOP
      * @throws DuitkuResponseException
      * @throws InvalidSignatureException
      * @throws MissingParamaterException
-     * @throws PaymentMethodUnavailableException
      * @throws RequestException
      */
     public function createTransaction(array $data): object
@@ -117,8 +114,6 @@ class LaravelDuitkuPOP
      * Capture callback notification payment
      *
      * @return object
-     * @throws TransactionNotFoundException
-     * @throws DuitkuResponseException
      * @throws InvalidSignatureException
      * @throws RequestException
      */

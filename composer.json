@@ -1,6 +1,7 @@
 {
     "name": "adityadarma/laravel-duitku",
     "description": "Library payment gateway duitku for laravel",
+    "keywords": ["laravel", "duitku", "laravel duitku"],
     "homepage": "https://github.com/adityadarma/laravel-duitku",
     "type": "library",
     "license": "MIT",

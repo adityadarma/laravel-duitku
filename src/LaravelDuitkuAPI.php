@@ -3,11 +3,11 @@
 namespace AdityaDarma\LaravelDuitku;
 
 use AdityaDarma\LaravelDuitku\Enums\ResponseCode;
-use AdityaDarma\LaravelDuitku\Excepstions\DuitkuResponseException;
-use AdityaDarma\LaravelDuitku\Excepstions\InvalidSignatureException;
-use AdityaDarma\LaravelDuitku\Excepstions\MissingParamaterException;
-use AdityaDarma\LaravelDuitku\Excepstions\PaymentMethodUnavailableException;
-use AdityaDarma\LaravelDuitku\Excepstions\TransactionNotFoundException;
+use AdityaDarma\LaravelDuitku\Exceptions\DuitkuResponseException;
+use AdityaDarma\LaravelDuitku\Exceptions\InvalidSignatureException;
+use AdityaDarma\LaravelDuitku\Exceptions\MissingParamaterException;
+use AdityaDarma\LaravelDuitku\Exceptions\PaymentMethodUnavailableException;
+use AdityaDarma\LaravelDuitku\Exceptions\TransactionNotFoundException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -177,8 +177,8 @@ class LaravelDuitkuAPI
                 if (str_contains($response->body(), 'Wrong Signature')) {
                     throw new InvalidSignatureException();
                 }
-                if (str_contains($response->body(), 'Payment channel not available')) {
-                    throw new PaymentMethodUnavailableException();
+                if (str_contains($response->body(), 'Transaction not found')) {
+                    throw new TransactionNotFoundException();
                 }
                 throw new DuitkuResponseException();
             })->object();
@@ -206,10 +206,7 @@ class LaravelDuitkuAPI
      * Capture callback notification payment
      *
      * @return object
-     * @throws TransactionNotFoundException
-     * @throws DuitkuResponseException
      * @throws InvalidSignatureException
-     * @throws RequestException
      */
     public function getNotificationTransaction(): object
     {
