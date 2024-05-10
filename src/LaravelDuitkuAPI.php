@@ -45,8 +45,8 @@ class LaravelDuitkuAPI
     public function setUrl(): void
     {
         $this->url = config('duitku.env') === 'production'
-            ? config('duitku.url.prod')
-            : config('duitku.url.dev');
+            ? 'https://passport.duitku.com'
+            : 'https://sandbox.duitku.com';
     }
 
     /**
@@ -141,16 +141,16 @@ class LaravelDuitkuAPI
                 'merchantCode'  => $response->merchantCode,
                 'reference'     => $response->reference,
                 'paymentUrl'    => $response->paymentUrl,
-                'vaNumber'      => $response->vaNumber,
+                'vaNumber'      => $response->vaNumber ?? null,
                 'qrString'      => $response->qrString ?? null,
-                'amount'        => (int)($response->amount),
+                'amount'        => (int)($response->amount ?? 0),
                 'statusMessage' => $response->statusMessage,
                 'statusCode'    => $response->statusCode,
             ];
         }
 
         return (object)[
-            'success'           => false,
+            'success'          => false,
             'statusMessage'    => $response->statusMessage,
             'statusCode'       => $response->statusCode,
         ];

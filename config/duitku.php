@@ -6,8 +6,4 @@ return [
     'api_key' => env('DUITKU_API_KEY'),
     'callback_url' => env('DUITKU_CALLBACK_URL'),
     'return_url' => env('DUITKU_RETURN_URL'),
-    'url' => [
-        'dev' => 'https://sandbox.duitku.com',
-        'prod' => 'https://passport.duitku.com',
-    ],
 ];
