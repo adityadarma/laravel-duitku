@@ -141,9 +141,11 @@ class LaravelDuitku
         if ($response && $response->responseCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
+                'merchant_code' => $response->merchantCode,
                 'reference'     => $response->reference,
                 'payment_url'   => $response->paymentUrl,
                 'va_number'     => $response->vaNumber,
+                'qr_string'     => $response->qrString,
                 'amount'        => (int)($response->amount),
                 'message'       => $response->statusMessage
             ];
@@ -186,6 +188,7 @@ class LaravelDuitku
         if ($response && $response->responseCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
+                'merchant_order_id'      => $response->merchantOrderId,
                 'reference'     => $response->reference,
                 'amount'        => (int)($response->amount),
                 'message'       => $response->statusMessage,
@@ -216,21 +219,19 @@ class LaravelDuitku
 
         if(request()->signature == $calcSignature)
         {
-            return (object) request()->only(
-                'amount',
-                'merchantOrderId',
-                'productDetail',
-                'additionalParam',
-                'paymentCode',
-                'resultCode',
-                'merchantUserId',
-                'reference',
-                'publisherOrderId',
-                'spUserHash',
-                'settlementDate',
-                'issuerCode',
-            );
-
+            return (object) [
+                'merchant_order_id' => request()->merchantOrderId,
+                'product_detail' => request()->productDetail,
+                'additional_param' => request()->additionalParam,
+                'payment_code' => request()->paymentCode,
+                'result_code' => request()->resultCode,
+                'merchant_user_id' => request()->merchantUserId,
+                'reference' => request()->reference,
+                'publisher_order_id' => request()->publisherOrderId,
+                'sp_user_hash' => request()->spUserHash,
+                'settlement_date' => request()->settlementDate,
+                'issuer_code' => request()->issuerCode,
+            ];
         }
 
         throw new InvalidSignatureException('Bad Parameter');
