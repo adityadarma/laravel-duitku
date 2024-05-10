@@ -31,6 +31,10 @@ class LaravelDuitkuServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
+            $this->publishes([
+                self::CONFIG_PATH => config_path('duitku.php')
+            ], 'config');
+
             $this->commands([LaravelDuitkuInstallCommand::class]);
         }
     }
