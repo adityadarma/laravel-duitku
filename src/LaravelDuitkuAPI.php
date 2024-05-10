@@ -57,7 +57,7 @@ class LaravelDuitkuAPI
      * @throws DuitkuResponseException
      * @throws RequestException
      */
-    public function getPaymentMethod(int $paymentAmount): array
+    public function getPaymentMethods(int $paymentAmount): array
     {
         // Request data to API
         $response = Http::post($this->url.'/webapi/api/merchant/paymentmethod/getpaymentmethod', [
