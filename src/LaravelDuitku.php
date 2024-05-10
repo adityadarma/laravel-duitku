@@ -123,12 +123,9 @@ class LaravelDuitku
                 'merchantcode'  => $this->merchantCode,
                 "returnUrl"     => $this->returnUrl,
                 "callbackUrl"   => $this->callbackUrl,
-                'signature'     => hash(
-                    'sha256',
-                    $this->merchantCode . $data['paymentAmount'] . $this->datetime . $this->apiKey
-                ),
-            ]))->throw(function ($response, $e) {
-                if (str_contains($response->body(), 'Invalid Signature')) {
+                'signature'     => md5($this->merchantCode . $data['merchantOrderId'] . $data['paymentAmount'] . $this->apiKey),
+            ]))->throw(function ($response) {
+                if (str_contains($response->body(), 'Wrong Signature')) {
                     throw new InvalidSignatureException();
                 }
                 if (str_contains($response->body(), 'Payment channel not available')) {
@@ -138,22 +135,24 @@ class LaravelDuitku
             })->object();
 
         // Return data new transaction
-        if ($response && $response->responseCode === ResponseCode::Success) {
+        if ($response && $response->statusCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
                 'merchant_code' => $response->merchantCode,
                 'reference'     => $response->reference,
                 'payment_url'   => $response->paymentUrl,
                 'va_number'     => $response->vaNumber,
-                'qr_string'     => $response->qrString,
+                'qr_string'     => $response->qrString ?? null,
                 'amount'        => (int)($response->amount),
-                'message'       => $response->statusMessage
+                'message'       => $response->statusMessage,
+                'code'          => $response->statusCode,
             ];
         }
 
         return (object)[
-            'success' => false,
-            'message' => $response->statusMessage
+            'success'           => false,
+            'status_message'    => $response->statusMessage,
+            'status_code'       => $response->statusCode,
         ];
     }
 
@@ -174,8 +173,8 @@ class LaravelDuitku
                 'merchantcode'      => $this->merchantCode,
                 "merchantOrderId"   => $merchantOrderId,
                 'signature'         => md5($this->merchantCode . $merchantOrderId . $this->apiKey),
-            ])->throw(function ($response, $e) {
-                if (str_contains($response->body(), 'Invalid Signature')) {
+            ])->throw(function ($response) {
+                if (str_contains($response->body(), 'Wrong Signature')) {
                     throw new InvalidSignatureException();
                 }
                 if (str_contains($response->body(), 'Payment channel not available')) {
@@ -185,21 +184,21 @@ class LaravelDuitku
             })->object();
 
         // Return data transaction
-        if ($response && $response->responseCode === ResponseCode::Success) {
+        if ($response && $response->statusCode === ResponseCode::Success) {
             return (object)[
-                'success'       => true,
-                'merchant_order_id'      => $response->merchantOrderId,
-                'reference'     => $response->reference,
-                'amount'        => (int)($response->amount),
-                'message'       => $response->statusMessage,
-                'code'          => $response->statusCode,
+                'success'           => true,
+                'merchant_order_id' => $response->merchantOrderId,
+                'reference'         => $response->reference,
+                'amount'            => (int)($response->amount),
+                'status_message'    => $response->statusMessage,
+                'status_code'       => $response->statusCode,
             ];
         }
 
         return (object)[
-            'success' => false,
-            'message' => $response->statusMessage,
-            'code'    => $response->statusCode,
+            'success'           => false,
+            'status_message'    => $response->statusMessage,
+            'status_code'       => $response->statusCode,
         ];
     }
 
@@ -220,17 +219,17 @@ class LaravelDuitku
         if(request()->signature == $calcSignature)
         {
             return (object) [
-                'merchant_order_id' => request()->merchantOrderId,
-                'product_detail' => request()->productDetail,
-                'additional_param' => request()->additionalParam,
-                'payment_code' => request()->paymentCode,
-                'result_code' => request()->resultCode,
-                'merchant_user_id' => request()->merchantUserId,
-                'reference' => request()->reference,
-                'publisher_order_id' => request()->publisherOrderId,
-                'sp_user_hash' => request()->spUserHash,
-                'settlement_date' => request()->settlementDate,
-                'issuer_code' => request()->issuerCode,
+                'merchant_order_id'     => request()->merchantOrderId,
+                'product_detail'        => request()->productDetail,
+                'additional_param'      => request()->additionalParam,
+                'payment_code'          => request()->paymentCode,
+                'result_code'           => request()->resultCode,
+                'merchant_user_id'      => request()->merchantUserId,
+                'reference'             => request()->reference,
+                'publisher_order_id'    => request()->publisherOrderId,
+                'sp_user_hash'          => request()->spUserHash,
+                'settlement_date'       => request()->settlementDate,
+                'issuer_code'           => request()->issuerCode,
             ];
         }
 
