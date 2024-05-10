@@ -18,8 +18,8 @@ class LaravelDuitkuServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(self::CONFIG_PATH, 'duitku');
 
-        $this->app->bind('laravel-duitku', function() {
-            return new LaravelDuitku();
+        $this->app->bind('laravel-duitku-api', function() {
+            return new LaravelDuitkuAPI();
         });
     }
 

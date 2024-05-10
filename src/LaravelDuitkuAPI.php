@@ -12,7 +12,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
-class LaravelDuitku
+class LaravelDuitkuAPI
 {
     public string $merchantCode;
     public string $apiKey;
