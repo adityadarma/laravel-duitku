@@ -53,11 +53,11 @@ class LaravelDuitku
      * Get payment method available
      *
      * @param int $paymentAmount
-     * @return object
+     * @return array
      * @throws DuitkuResponseException
      * @throws RequestException
      */
-    public function getPaymentMethod(int $paymentAmount): object
+    public function getPaymentMethod(int $paymentAmount): array
     {
         // Request data to API
         $response = Http::post($this->url.'/webapi/api/merchant/paymentmethod/getpaymentmethod', [
@@ -73,14 +73,14 @@ class LaravelDuitku
         if ($response && $response->responseCode === ResponseCode::Success) {
             $paymentMethod = [];
             foreach ($response->paymentFee as $method) {
-                $paymentMethod[] = [
+                $paymentMethod[] = (object)[
                     'code'  => $method->paymentMethod,
                     'name'  => $method->paymentName,
                     'image' => $method->paymentImage,
                     'fee'   => (int)($method->totalFee)
                 ];
             }
-            return (object)$paymentMethod;
+            return $paymentMethod;
         }
 
         throw new DuitkuResponseException();

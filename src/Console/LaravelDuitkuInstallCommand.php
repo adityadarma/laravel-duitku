@@ -13,7 +13,7 @@ class LaravelDuitkuInstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'laravel-duitku:install';
+    protected $signature = 'duitku:install';
 
     /**
      * The console command description.
