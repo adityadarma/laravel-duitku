@@ -21,6 +21,9 @@ class LaravelDuitkuServiceProvider extends ServiceProvider
         $this->app->bind('laravel-duitku-api', function() {
             return new LaravelDuitkuAPI();
         });
+        $this->app->bind('laravel-duitku-pop', function() {
+            return new LaravelDuitkuPOP();
+        });
     }
 
     /**

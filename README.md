@@ -29,24 +29,24 @@ DUITKU_APDUITKU_CALLBACK_URLI_KEY=https://example.com/callback
 DUITKU_RETURN_URL=https://example.com/to-page-payment
 ```
 
-### Usage
+### Usage API
 
 ##### Get Payment Method
 example:
 
 ```php
-use AdityaDarma\LaravelDuitku\Facades\Duitku;
+use AdityaDarma\LaravelDuitku\Facades\DuitkuAPI;
 
-$listPayments = Duitku::getPaymentMethod(1000000);
+$listPayments = DuitkuAPI::getPaymentMethod(1000000);
 ```
 
 ##### Create Payment
 example:
 
 ```php
-use AdityaDarma\LaravelDuitku\Facades\Duitku;
+use AdityaDarma\LaravelDuitku\Facades\DuitkuAPI;
 
-Duitku::createTransaction([
+DuitkuAPI::createTransaction([
     'merchantOrderId'   => 10000,
     'customerVaName'    => 'Aditya Darma',
     'email'             => 'email@example.com',
@@ -84,18 +84,112 @@ Duitku::createTransaction([
 example:
 
 ```php
-use AdityaDarma\LaravelDuitku\Facades\Duitku;
+use AdityaDarma\LaravelDuitku\Facades\DuitkuAPI;
 
-Duitku::checkTransactionStatus(1000000);
+DuitkuAPI::checkTransactionStatus(1000000);
 ```
 
 ##### Handle Callback Transaction
 example:
 
 ```php
-use AdityaDarma\LaravelDuitku\Facades\Duitku;
+use AdityaDarma\LaravelDuitku\Facades\DuitkuAPI;
 
-$payment = Duitku::getNotificationTransaction();
+$payment = DuitkuAPI::getNotificationTransaction();
+```
+
+### Usage POP
+
+##### Create Payment
+example:
+
+```php
+use AdityaDarma\LaravelDuitku\Facades\DuitkuPOP;
+
+DuitkuPOP::createTransaction([
+    'merchantOrderId'   => 10000,
+    'customerVaName'    => 'Aditya Darma',
+    'email'             => 'email@example.com',
+    'paymentAmount'     => 100000,
+    'productDetails'    => 'Buy Company',
+    'expiryPeriod'      => 10,  // optional (minute)
+    'phoneNumber'       => '08123456789', // optional
+    'itemDetails'       => [ // optional
+        [
+            'name' => 'Test Item 1',
+            'price' => 10000,
+            'quantity' => 1
+        ],[
+            'name' => 'Test Item 2',
+            'price' => 10000,
+            'quantity' => 1
+        ]
+    ],
+    'customerDetail'    => [ // optional
+        'firstName'         => 'Aditya',
+        'lastName'          => 'Darma',
+        'email'             => 'email@example.com',
+        'phoneNumber'       => $phoneNumber,
+        'billingAddress'    => $address,
+        'shippingAddress'   => $address
+    ],
+    'additionalParam'   => '', // optional
+    'merchantUserInfo'  => '', // optional
+]);
+```
+[List Payment Method](https://docs.duitku.com/pop/id/?php#payment-method)
+
+##### Check Transaction
+example:
+
+```php
+use AdityaDarma\LaravelDuitku\Facades\DuitkuPOP;
+
+DuitkuPOP::checkTransactionStatus(1000000);
+```
+
+##### Handle Callback Transaction
+example:
+
+```php
+use AdityaDarma\LaravelDuitku\Facades\DuitkuPOP;
+
+$payment = DuitkuPOP::getNotificationTransaction();
+```
+
+#### Modul Duitku JS
+
+* Production
+```
+<script src="https://app-prod.duitku.com/lib/js/duitku.js"></script>
+```
+
+* Sandbox
+```
+<script src="https://app-sandbox.duitku.com/lib/js/duitku.js"></script>
+```
+
+* Implement
+```
+checkout.process("DXXXXS875LXXXX32IJZ7", {
+    defaultLanguage: "id", //optional
+    successEvent: function(result){
+        console.log(result);
+        alert('Payment Success');
+    },
+    pendingEvent: function(result){
+        console.log(result);
+        alert('Payment Pending');
+    },
+    errorEvent: function(result){
+        console.log(result);
+        alert('Payment Error');
+    },
+    closeEvent: function(result){
+        console.log(result);
+        alert('customer closed the popup without finishing the payment');
+    }
+});
 ```
 
 ## License
