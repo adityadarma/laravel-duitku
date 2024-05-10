@@ -74,10 +74,10 @@ class LaravelDuitkuAPI
             $paymentMethod = [];
             foreach ($response->paymentFee as $method) {
                 $paymentMethod[] = (object)[
-                    'code'  => $method->paymentMethod,
-                    'name'  => $method->paymentName,
-                    'image' => $method->paymentImage,
-                    'fee'   => (int)($method->totalFee)
+                    'paymentMethod' => $method->paymentMethod,
+                    'paymentName'   => $method->paymentName,
+                    'paymentImage'  => $method->paymentImage,
+                    'totalFee'      => (int)($method->totalFee)
                 ];
             }
             return $paymentMethod;
@@ -138,21 +138,21 @@ class LaravelDuitkuAPI
         if ($response && $response->statusCode === ResponseCode::Success) {
             return (object)[
                 'success'       => true,
-                'merchant_code' => $response->merchantCode,
+                'merchantCode'  => $response->merchantCode,
                 'reference'     => $response->reference,
-                'payment_url'   => $response->paymentUrl,
-                'va_number'     => $response->vaNumber,
-                'qr_string'     => $response->qrString ?? null,
+                'paymentUrl'    => $response->paymentUrl,
+                'vaNumber'      => $response->vaNumber,
+                'qrString'      => $response->qrString ?? null,
                 'amount'        => (int)($response->amount),
-                'message'       => $response->statusMessage,
-                'code'          => $response->statusCode,
+                'statusMessage' => $response->statusMessage,
+                'statusCode'    => $response->statusCode,
             ];
         }
 
         return (object)[
             'success'           => false,
-            'status_message'    => $response->statusMessage,
-            'status_code'       => $response->statusCode,
+            'statusMessage'    => $response->statusMessage,
+            'statusCode'       => $response->statusCode,
         ];
     }
 
@@ -187,18 +187,18 @@ class LaravelDuitkuAPI
         if ($response && $response->statusCode === ResponseCode::Success) {
             return (object)[
                 'success'           => true,
-                'merchant_order_id' => $response->merchantOrderId,
+                'merchantOrderId'   => $response->merchantOrderId,
                 'reference'         => $response->reference,
                 'amount'            => (int)($response->amount),
-                'status_message'    => $response->statusMessage,
-                'status_code'       => $response->statusCode,
+                'statusMessage'     => $response->statusMessage,
+                'statusCode'        => $response->statusCode,
             ];
         }
 
         return (object)[
             'success'           => false,
-            'status_message'    => $response->statusMessage,
-            'status_code'       => $response->statusCode,
+            'statusMessage'     => $response->statusMessage,
+            'statusCode'        => $response->statusCode,
         ];
     }
 
@@ -219,17 +219,17 @@ class LaravelDuitkuAPI
         if(request()->signature == $calcSignature)
         {
             return (object) [
-                'merchant_order_id'     => request()->merchantOrderId,
-                'product_detail'        => request()->productDetail,
-                'additional_param'      => request()->additionalParam,
-                'payment_code'          => request()->paymentCode,
-                'result_code'           => request()->resultCode,
-                'merchant_user_id'      => request()->merchantUserId,
-                'reference'             => request()->reference,
-                'publisher_order_id'    => request()->publisherOrderId,
-                'sp_user_hash'          => request()->spUserHash,
-                'settlement_date'       => request()->settlementDate,
-                'issuer_code'           => request()->issuerCode,
+                'merchantOrderId'   => request()->merchantOrderId,
+                'productDetail'     => request()->productDetail,
+                'additionalParam'   => request()->additionalParam,
+                'paymentCode'       => request()->paymentCode,
+                'resultCode'        => request()->resultCode,
+                'merchantUserId'    => request()->merchantUserId,
+                'reference'         => request()->reference,
+                'publisherOrderId'  => request()->publisherOrderId,
+                'spUserHash'        => request()->spUserHash,
+                'settlementDate'    => request()->settlementDate,
+                'issuerCode'        => request()->issuerCode,
             ];
         }
 
