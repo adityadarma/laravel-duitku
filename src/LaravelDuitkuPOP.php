@@ -65,7 +65,6 @@ class LaravelDuitkuPOP
             'customerVaName'    => ['nullable', 'string', 'max:20'],
             'email'             => ['required', 'email', 'max:255'],
             'paymentAmount'     => ['required', 'numeric'],
-            'paymentMethod'     => ['required', 'string', 'max:2'],
             'productDetails'    => ['required', 'string', 'max:255'],
             'expiryPeriod'      => ['nullable', 'numeric'],
             'phoneNumber'       => ['nullable', 'string', 'max:50'],
