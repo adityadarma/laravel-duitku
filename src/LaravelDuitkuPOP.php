@@ -123,7 +123,7 @@ class LaravelDuitkuPOP
      */
     public function getNotificationTransaction(): object
     {
-        if (!request()->merchantCode || !request()->amount || !request()->merchantOrderId || !request()->signature) {
+        if (isset(request()->merchantCode) && isset(request()->amount) && isset(request()->merchantOrderId) && isset(request()->signature)) {
             $calcSignature = md5(request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey);
 
             if(request()->signature == $calcSignature)
