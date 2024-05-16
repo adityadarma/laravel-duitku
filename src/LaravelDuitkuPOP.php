@@ -85,8 +85,8 @@ class LaravelDuitkuPOP
                 'x-duitku-merchantcode' => $this->merchantCode,
             ])->post($this->url.'/api/merchant/createInvoice', array_merge($data, [
                 'merchantcode'  => $this->merchantCode,
-                "returnUrl"     => $this->returnUrl,
-                "callbackUrl"   => $this->callbackUrl,
+                'returnUrl'     => $this->returnUrl,
+                'callbackUrl'   => $this->callbackUrl,
                 'signature'     => $signature,
             ]))->throw(function ($response) {
                 if (str_contains($response->body(), 'Wrong Signature')) {
@@ -123,14 +123,14 @@ class LaravelDuitkuPOP
      */
     public function getNotificationTransaction(): object
     {
-        if (!request()->merchantCode || !request()->paymentAmount || !request()->merchantOrderId || !request()->signature) {
-            $calcSignature = md5(request()->merchantCode . request()->paymentAmount . request()->merchantOrderId . $this->apiKey);
+        if (!request()->merchantCode || !request()->amount || !request()->merchantOrderId || !request()->signature) {
+            $calcSignature = md5(request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey);
 
             if(request()->signature == $calcSignature)
             {
                 return (object) [
                     'merchantCode'      => request()->merchantCode,
-                    'paymentAmount'     => request()->paymentAmount,
+                    'amount'            => request()->amount,
                     'merchantOrderId'   => request()->merchantOrderId,
                     'productDetail'     => request()->productDetail,
                     'additionalParam'   => request()->additionalParam,

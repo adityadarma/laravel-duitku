@@ -121,8 +121,8 @@ class LaravelDuitkuAPI
         // Request data to API
         $response = Http::post($this->url.'/webapi/api/merchant/v2/inquiry', array_merge($data, [
                 'merchantcode'  => $this->merchantCode,
-                "returnUrl"     => $this->returnUrl,
-                "callbackUrl"   => $this->callbackUrl,
+                'returnUrl'     => $this->returnUrl,
+                'callbackUrl'   => $this->callbackUrl,
                 'signature'     => md5($this->merchantCode . $data['merchantOrderId'] . $data['paymentAmount'] . $this->apiKey),
             ]))->throw(function ($response) {
                 if (str_contains($response->body(), 'Wrong Signature')) {
@@ -171,7 +171,7 @@ class LaravelDuitkuAPI
         // Check status transaction
         $response = Http::post($this->url.'/webapi/api/merchant/transactionStatus', [
                 'merchantcode'      => $this->merchantCode,
-                "merchantOrderId"   => $merchantOrderId,
+                'merchantOrderId'   => $merchantOrderId,
                 'signature'         => md5($this->merchantCode . $merchantOrderId . $this->apiKey),
             ])->throw(function ($response) {
                 if (str_contains($response->body(), 'Wrong Signature')) {
@@ -190,15 +190,15 @@ class LaravelDuitkuAPI
                 'merchantOrderId'   => $response->merchantOrderId,
                 'reference'         => $response->reference,
                 'amount'            => (int)($response->amount),
-                'statusMessage'     => $response->statusMessage,
                 'statusCode'        => $response->statusCode,
+                'statusMessage'     => $response->statusMessage,
             ];
         }
 
         return (object)[
             'success'           => false,
-            'statusMessage'     => $response->statusMessage,
             'statusCode'        => $response->statusCode,
+            'statusMessage'     => $response->statusMessage,
         ];
     }
 
@@ -210,12 +210,14 @@ class LaravelDuitkuAPI
      */
     public function getNotificationTransaction(): object
     {
-        if (!request()->merchantCode || !request()->paymentAmount || !request()->merchantOrderId || !request()->signature) {
-            $calcSignature = md5(request()->merchantCode . request()->paymentAmount . request()->merchantOrderId . $this->apiKey);
+        if (!request()->merchantCode || !request()->amount || !request()->merchantOrderId || !request()->signature) {
+            $calcSignature = md5(request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey);
 
             if(request()->signature == $calcSignature)
             {
                 return (object) [
+                    'merchantCode'      => request()->merchantCode,
+                    'amount'            => request()->amount,
                     'merchantOrderId'   => request()->merchantOrderId,
                     'productDetail'     => request()->productDetail,
                     'additionalParam'   => request()->additionalParam,
