@@ -30,7 +30,7 @@ class LaravelDuitkuPOP
         $this->callbackUrl      = config('duitku.callback_url');
         $this->returnUrl        = config('duitku.return_url');
         $this->env              = config('duitku.env');
-        $this->datetime         = now()->format('Y-m-d H:i:s');
+        $this->datetime         = now()->getTimestampMs();
 
         $this->setUrl();
     }
@@ -61,28 +61,33 @@ class LaravelDuitkuPOP
     {
         // Validate data input
         $validator = Validator::make($data, [
-            'merchantOrderId'   => ['required', 'string', 'max:50'],
-            'customerVaName'    => ['nullable', 'string', 'max:20'],
-            'email'             => ['required', 'email', 'max:255'],
             'paymentAmount'     => ['required', 'numeric'],
+            'merchantOrderId'   => ['required', 'string', 'max:50'],
             'productDetails'    => ['required', 'string', 'max:255'],
-            'expiryPeriod'      => ['nullable', 'numeric'],
+            'email'             => ['required', 'email', 'max:255'],
+            'additionalParam'   => ['nullable', 'string', 'max:255'],
+            'merchantUserInfo'  => ['nullable', 'string', 'max:255'],
+            'customerVaName'    => ['nullable', 'string', 'max:20'],
             'phoneNumber'       => ['nullable', 'string', 'max:50'],
             'itemDetails'       => ['nullable', 'array'],
             'customerDetail'    => ['nullable', 'array'],
-            'additionalParam'   => ['nullable'],
-            'merchantUserInfo'  => ['nullable'],
+            'expiryPeriod'      => ['nullable', 'numeric'],
         ]);
         if ($validator->fails()) {
             throw new MissingParamaterException();
         }
 
         // Request data to API
-        $response = Http::post($this->url.'/api/merchant/createInvoice', array_merge($data, [
+        $signature = hash('sha256', $this->merchantCode . $this->datetime . $this->apiKey);
+        $response = Http::withHeaders([
+                'x-duitku-signature' => $signature,
+                'x-duitku-timestamp' => $this->datetime,
+                'x-duitku-merchantcode' => $this->merchantCode,
+            ])->post($this->url.'/api/merchant/createInvoice', array_merge($data, [
                 'merchantcode'  => $this->merchantCode,
                 "returnUrl"     => $this->returnUrl,
                 "callbackUrl"   => $this->callbackUrl,
-                'signature'     => md5($this->merchantCode . $data['merchantOrderId'] . $data['paymentAmount'] . $this->apiKey),
+                'signature'     => $signature,
             ]))->throw(function ($response) {
                 if (str_contains($response->body(), 'Wrong Signature')) {
                     throw new InvalidSignatureException();
@@ -97,15 +102,15 @@ class LaravelDuitkuPOP
                 'merchantCode'  => $response->merchantCode,
                 'reference'     => $response->reference,
                 'paymentUrl'    => $response->paymentUrl,
-                'statusMessage' => $response->statusMessage,
                 'statusCode'    => $response->statusCode,
+                'statusMessage' => $response->statusMessage,
             ];
         }
 
         return (object)[
             'success'          => false,
-            'statusMessage'    => $response->statusMessage,
             'statusCode'       => $response->statusCode,
+            'statusMessage'    => $response->statusMessage,
         ];
     }
 
@@ -118,24 +123,29 @@ class LaravelDuitkuPOP
      */
     public function getNotificationTransaction(): object
     {
-        $params = request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey;
-        $calcSignature = md5($params);
+        if (!request()->merchantCode || !request()->paymentAmount || !request()->merchantOrderId || !request()->signature) {
+            $calcSignature = md5(request()->merchantCode . request()->paymentAmount . request()->merchantOrderId . $this->apiKey);
 
-        if(request()->signature == $calcSignature)
-        {
-            return (object) [
-                'merchantOrderId'   => request()->merchantOrderId,
-                'productDetail'     => request()->productDetail,
-                'additionalParam'   => request()->additionalParam,
-                'paymentCode'       => request()->paymentCode,
-                'resultCode'        => request()->resultCode,
-                'merchantUserId'    => request()->merchantUserId,
-                'reference'         => request()->reference,
-                'publisherOrderId'  => request()->publisherOrderId,
-                'spUserHash'        => request()->spUserHash,
-                'settlementDate'    => request()->settlementDate,
-                'issuerCode'        => request()->issuerCode,
-            ];
+            if(request()->signature == $calcSignature)
+            {
+                return (object) [
+                    'merchantCode'      => request()->merchantCode,
+                    'paymentAmount'     => request()->paymentAmount,
+                    'merchantOrderId'   => request()->merchantOrderId,
+                    'productDetail'     => request()->productDetail,
+                    'additionalParam'   => request()->additionalParam,
+                    'paymentCode'       => request()->paymentCode,
+                    'resultCode'        => request()->resultCode,
+                    'merchantUserId'    => request()->merchantUserId,
+                    'reference'         => request()->reference,
+                    'publisherOrderId'  => request()->publisherOrderId,
+                    'spUserHash'        => request()->spUserHash,
+                    'settlementDate'    => request()->settlementDate,
+                    'issuerCode'        => request()->issuerCode,
+                ];
+            }
+
+            throw new InvalidSignatureException('Bad Signature');
         }
 
         throw new InvalidSignatureException('Bad Parameter');

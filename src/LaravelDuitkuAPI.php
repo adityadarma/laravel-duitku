@@ -101,18 +101,18 @@ class LaravelDuitkuAPI
     {
         // Validate data input
         $validator = Validator::make($data, [
-            'merchantOrderId'   => ['required', 'string', 'max:50'],
-            'customerVaName'    => ['required', 'string', 'max:20'],
-            'email'             => ['required', 'email', 'max:255'],
             'paymentAmount'     => ['required', 'numeric'],
-            'paymentMethod'     => ['required', 'string', 'max:2'],
+            'merchantOrderId'   => ['required', 'string', 'max:50'],
             'productDetails'    => ['required', 'string', 'max:255'],
-            'expiryPeriod'      => ['nullable', 'numeric'],
+            'email'             => ['required', 'email', 'max:255'],
+            'additionalParam'   => ['nullable'],
+            'paymentMethod'     => ['required', 'string', 'max:2'],
+            'merchantUserInfo'  => ['nullable'],
+            'customerVaName'    => ['required', 'string', 'max:20'],
             'phoneNumber'       => ['nullable', 'string', 'max:50'],
             'itemDetails'       => ['nullable', 'array'],
             'customerDetail'    => ['nullable', 'array'],
-            'additionalParam'   => ['nullable'],
-            'merchantUserInfo'  => ['nullable'],
+            'expiryPeriod'      => ['nullable', 'numeric'],
         ]);
         if ($validator->fails()) {
             throw new MissingParamaterException();
@@ -144,15 +144,15 @@ class LaravelDuitkuAPI
                 'vaNumber'      => $response->vaNumber ?? null,
                 'qrString'      => $response->qrString ?? null,
                 'amount'        => (int)($response->amount ?? 0),
-                'statusMessage' => $response->statusMessage,
                 'statusCode'    => $response->statusCode,
+                'statusMessage' => $response->statusMessage,
             ];
         }
 
         return (object)[
             'success'          => false,
-            'statusMessage'    => $response->statusMessage,
             'statusCode'       => $response->statusCode,
+            'statusMessage'    => $response->statusMessage,
         ];
     }
 
@@ -210,24 +210,27 @@ class LaravelDuitkuAPI
      */
     public function getNotificationTransaction(): object
     {
-        $params = request()->merchantCode . request()->amount . request()->merchantOrderId . $this->apiKey;
-        $calcSignature = md5($params);
+        if (!request()->merchantCode || !request()->paymentAmount || !request()->merchantOrderId || !request()->signature) {
+            $calcSignature = md5(request()->merchantCode . request()->paymentAmount . request()->merchantOrderId . $this->apiKey);
 
-        if(request()->signature == $calcSignature)
-        {
-            return (object) [
-                'merchantOrderId'   => request()->merchantOrderId,
-                'productDetail'     => request()->productDetail,
-                'additionalParam'   => request()->additionalParam,
-                'paymentCode'       => request()->paymentCode,
-                'resultCode'        => request()->resultCode,
-                'merchantUserId'    => request()->merchantUserId,
-                'reference'         => request()->reference,
-                'publisherOrderId'  => request()->publisherOrderId,
-                'spUserHash'        => request()->spUserHash,
-                'settlementDate'    => request()->settlementDate,
-                'issuerCode'        => request()->issuerCode,
-            ];
+            if(request()->signature == $calcSignature)
+            {
+                return (object) [
+                    'merchantOrderId'   => request()->merchantOrderId,
+                    'productDetail'     => request()->productDetail,
+                    'additionalParam'   => request()->additionalParam,
+                    'paymentCode'       => request()->paymentCode,
+                    'resultCode'        => request()->resultCode,
+                    'merchantUserId'    => request()->merchantUserId,
+                    'reference'         => request()->reference,
+                    'publisherOrderId'  => request()->publisherOrderId,
+                    'spUserHash'        => request()->spUserHash,
+                    'settlementDate'    => request()->settlementDate,
+                    'issuerCode'        => request()->issuerCode,
+                ];
+            }
+
+            throw new InvalidSignatureException('Bad Parameter');
         }
 
         throw new InvalidSignatureException('Bad Parameter');
