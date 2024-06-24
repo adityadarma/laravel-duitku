@@ -54,7 +54,7 @@ class LaravelDuitkuAPI
      *
      * @param string $merchantCode
      * @param string $apiKey
-     * @return this
+     * @return void
      */
     public function config(string $merchantCode, string $apiKey)
     {
