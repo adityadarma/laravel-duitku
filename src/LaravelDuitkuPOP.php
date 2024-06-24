@@ -48,6 +48,21 @@ class LaravelDuitkuPOP
     }
 
     /**
+     * Set config
+     *
+     * @param string $merchantCode
+     * @param string $apiKey
+     * @return void
+     */
+    public function config(string $merchantCode, string $apiKey)
+    {
+        $this->merchantCode     = $merchantCode;
+        $this->apiKey           = $apiKey;
+
+        return $this;
+    }
+
+    /**
      * Create payment transaction
      *
      * @param array $data

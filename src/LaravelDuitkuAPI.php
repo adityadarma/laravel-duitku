@@ -50,6 +50,21 @@ class LaravelDuitkuAPI
     }
 
     /**
+     * Set config
+     *
+     * @param string $merchantCode
+     * @param string $apiKey
+     * @return void
+     */
+    public function config(string $merchantCode, string $apiKey)
+    {
+        $this->merchantCode     = $merchantCode;
+        $this->apiKey           = $apiKey;
+
+        return $this;
+    }
+
+    /**
      * Get payment method available
      *
      * @param int $paymentAmount
