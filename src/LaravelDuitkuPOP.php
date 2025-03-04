@@ -109,7 +109,7 @@ class LaravelDuitkuPOP
                     throw new InvalidSignatureException();
                 }
 
-                throw new DuitkuResponseException('Error response code http: '.$response->status());
+                throw new DuitkuResponseException('Error response code http: '.$response->status().', body: '.$response->body());
             })->object();
 
         // Return data new transaction
