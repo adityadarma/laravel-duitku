@@ -7,6 +7,7 @@ use AdityaDarma\LaravelDuitku\Exceptions\DuitkuResponseException;
 use AdityaDarma\LaravelDuitku\Exceptions\InvalidSignatureException;
 use AdityaDarma\LaravelDuitku\Exceptions\MissingParamaterException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
@@ -103,11 +104,12 @@ class LaravelDuitkuPOP
                 'returnUrl'     => $this->returnUrl,
                 'callbackUrl'   => $this->callbackUrl,
                 'signature'     => $signature,
-            ]))->throw(function ($response) {
+            ]))->throw(function (Response $response) {
                 if (str_contains($response->body(), 'Wrong Signature')) {
                     throw new InvalidSignatureException();
                 }
-                throw new DuitkuResponseException();
+
+                throw new DuitkuResponseException('Error response code http: '.$response->status());
             })->object();
 
         // Return data new transaction

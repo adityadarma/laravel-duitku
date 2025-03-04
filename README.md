@@ -25,7 +25,7 @@ Here are the `.env` file variables available:
 DUITKU_ENV=development
 DUITKU_MERCHANT_CODE=xxxxxxx
 DUITKU_API_KEY=xxxxxx
-DUITKU_APDUITKU_CALLBACK_URLI_KEY=https://example.com/callback
+DUITKU_CALLBACK_URL=https://example.com/callback
 DUITKU_RETURN_URL=https://example.com/return
 ```
 
