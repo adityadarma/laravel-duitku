@@ -53,9 +53,9 @@ class LaravelDuitkuPOP
      *
      * @param string $merchantCode
      * @param string $apiKey
-     * @return void
+     * @return $this
      */
-    public function config(string $merchantCode, string $apiKey)
+    public function config(string $merchantCode, string $apiKey): static
     {
         $this->merchantCode     = $merchantCode;
         $this->apiKey           = $apiKey;

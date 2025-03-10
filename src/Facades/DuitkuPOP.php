@@ -5,7 +5,7 @@ namespace AdityaDarma\LaravelDuitku\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void config(string $merchantCode, string $apiKey)
+ * @method static static config(string $merchantCode, string $apiKey)
  * @method static object createTransaction(array $data)
  * @method static object getNotificationTransaction()
  *
